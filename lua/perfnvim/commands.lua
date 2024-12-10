@@ -1,7 +1,7 @@
 local M = {}
 local client_helpers = require("perfnvim.helpers.client_helpers")
 local file_helpers = require("perfnvim.helpers.file_helpers")
-local helpers = require("perfnvim.helpers.other_helpers")
+local utils = require("perfnvim.utils")
 
 -- Function to list changelists and allow selection
 function M.SelectChangelistInteractively(action)
@@ -206,7 +206,7 @@ function M.GoToPreviousChange()
 	-- Iterate over the signs to find the next one
 	local continuous_counter = 1
 	local signs_array = signs[1].signs
-	helpers._ReverseArray(signs_array)
+	utils.reverse(signs_array)
 	for _, sign in ipairs(signs_array) do
 		if sign.lnum < current_line then
 			if sign.lnum == (current_line - continuous_counter) then
