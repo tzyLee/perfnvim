@@ -9,7 +9,7 @@ function M.SelectChangelistInteractively(action)
 	-- Alternative commands (1 preferred):
 	-- 1 : p4 changelists -s pending -c <clientname> | cut -d' ' -f2
 	-- 2 : p4 opened -s | cut -d' ' -f5 | uniq
-	local handle = io.popen("p4 changelists -s pending -c " .. client_helpers._GetClientName() .. " | cut -d' ' -f2")
+	local handle = io.popen("p4 changelists -s pending -c " .. client_helpers.getClientName() .. " | cut -d' ' -f2")
 	if not handle then
 		print("Failed to run p4 changelists command")
 		return
@@ -158,15 +158,15 @@ function M.SelectChangelistInteractively(action)
 end
 
 -- Create a Telescope picker for the p4 opened files
-function M.GetP4Opened()
+function M.GetP4Opened(opts)
 	local actions = require("telescope.actions")
 	local pickers = require("telescope.pickers")
 	local finders = require("telescope.finders")
 	local previewers = require("telescope.previewers")
 	local conf = require("telescope.config").values
 
-	local client_root = client_helpers._GetClientRoot()
-	local files = file_helpers._GetP4OpenedPaths()
+	local client_root = client_helpers.getClientRoot()
+	local files = client_helpers.getOpenedFiles(true)
 	-- Transform files to be relative to client_root
 	local relative_files = {}
 	for _, file in ipairs(files) do
@@ -187,11 +187,7 @@ function M.GetP4Opened()
 				end,
 			}),
 			sorter = conf.generic_sorter({}),
-			previewer = previewers.new_termopen_previewer({
-				get_command = function(entry)
-					return { "batcat", "--style=numbers", "--color=always", "--line-range=:500", entry.value }
-				end,
-			}),
+            previewer = conf.grep_previewer(opts or {}),
 			attach_mappings = function(_, map)
 				map("i", "<CR>", actions.select_default)
 				map("n", "<CR>", actions.select_default)

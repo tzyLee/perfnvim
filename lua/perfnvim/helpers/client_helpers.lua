@@ -1,48 +1,116 @@
-local M = {}
+local log = require "perfnvim.log"
+local utils = require "perfnvim.utils"
 
-function M._GetP4Info()
-	-- Execute the 'p4 info' command and capture the output
-	local handle = io.popen("p4 info")
-	if not handle then
-		print("Failed to run p4 command")
+local client = {}
+
+function client.buildP4Command(command, option)
+    -- Build command
+    local cmd = {"p4"}
+    local optStr = table.concat(option or {}, " ")
+    if optStr ~= '' then
+        table.insert(cmd, optStr)
+    end
+    table.insert(cmd, command)
+    
+    return table.concat(cmd, " ")
+end
+
+function client.getP4CommandTable(command, option)
+    option = option or {}
+    table.insert(option, "-ztag")
+    local cmdStr = client.buildP4Command(command, option)
+	-- Execute the 'p4 info' command and capture the output as table
+    local result = {}
+	local p = io.popen(cmdStr)
+	if p == nil then
+        log.warn(string.format("Failed to run p4 command: '%s'.", cmdStr))
 		return
 	end
-	local result = handle:read("*a")
-	handle:close()
+    while true do
+        local l = p:read("*l")
+        if l == nil then
+            break
+        end
+        if l ~= '' then
+            k, v = string.match(l, "%.%.%. ([^%s]+) ([^%s]+)")
+            if k == nil then
+                log.warn(vim.inspect(l))
+            end
+            result[k] = v
+        end
+    end
+	p:close()
 	return result
 end
 
-function M._GetClientRoot()
-	local result = M._GetP4Info()
-	if result then
-		local client_root = result:match("Client root:%s*(.-)\n")
-		return client_root
-	else
-		print("Cannot obtain client root from p4 info")
+function client.runP4Command(command, option)
+    local cmdStr = client.buildP4Command(command, option)
+	-- Execute the 'p4 info' command and capture the output as array of strings
+    local result = {}
+	local p = io.popen(cmdStr)
+	if p == nil then
+        log.warn(string.format("Failed to run p4 command: '%s'.", cmdStr))
 		return
 	end
+    while true do
+        local l = p:read("*l")
+        if l == nil then
+            break
+        end
+        table.insert(result, l)
+    end
+	p:close()
+	return result
 end
 
-function M._GetClientName()
-	local result = M._GetP4Info()
-	if result then
-		local client_name = result:match("Client name:%s*(.-)\n")
-		return client_name
-	else
-		print("Cannot obtain client name from p4 info")
+function client.getClientRoot()
+	local result = next(client.runP4Command("info", {"-ztag", "-F", "%clientRoot%"}))
+	if result == nil then
+        log.warn "Failed to obtain client root from p4 info."
 		return
 	end
+    return result
 end
 
-function M._GetClientStream()
-	local result = M._GetP4Info()
-	if result then
-		local client_stream = result:match("Client stream:%s*(.-)\n")
-		return client_stream
-	else
-		print("Cannot obtain client stream from p4 info")
+function client.getClientName()
+	local result = next(client.runP4Command("info", {"-ztag", "-F", "%clientName%"}))
+	if result == nil then
+        log.warn "Failed to obtain client name from p4 info."
 		return
 	end
+    return result
 end
 
-return M
+function client.getClientStream()
+	local result = next(client.runP4Command("info", {"-ztag", "-F", "%clientStream%"}))
+	if result == nil then
+        log.warn "Failed to obtain client stream from p4 info."
+		return
+	end
+    return result
+end
+
+function client.getOpenedFiles(localPath)
+    localPath = localPath or false
+	local result = client.runP4Command("opened", {"-ztag", "-F", "%clientFile%"})
+	if next(result) == nil then
+        log.warn "Failed to obtain opened files."
+		return
+	end
+    if localPath then
+        local clientInfo = client.getP4CommandTable("info")
+        local clientRoot = clientInfo["clientRoot"]
+        local clientName = clientInfo["clientName"]
+        if clientInfo == nil or clientName == nil then
+            log.warn "Failed to obtain client info."
+            return
+        end
+        local pattern = "//" .. utils.quote(clientName)
+        for i, v in ipairs(result) do
+            result[i] = v:gsub(pattern, clientRoot, 1)
+        end
+    end
+    return result
+end
+
+return client
