@@ -94,7 +94,7 @@ function M._AnnotateSigns()
 		end
 	end
 
-	vim.fn.jobstart("p4 diff " .. file_path, {
+	vim.fn.jobstart("p4 diff -dl " .. file_path, {
 		on_stdout = on_stdout,
 		on_exit = on_exit,
 		stdout_buffered = true,

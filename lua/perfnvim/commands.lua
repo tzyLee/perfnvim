@@ -1,6 +1,5 @@
 local M = {}
 local client_helpers = require("perfnvim.helpers.client_helpers")
-local file_helpers = require("perfnvim.helpers.file_helpers")
 local utils = require("perfnvim.utils")
 
 -- Function to list changelists and allow selection
@@ -187,7 +186,7 @@ function M.GetP4Opened(opts)
 				end,
 			}),
 			sorter = conf.generic_sorter({}),
-            previewer = conf.grep_previewer(opts or {}),
+			previewer = conf.grep_previewer(opts or {}),
 			attach_mappings = function(_, map)
 				map("i", "<CR>", actions.select_default)
 				map("n", "<CR>", actions.select_default)

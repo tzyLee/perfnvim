@@ -4,19 +4,19 @@ local constants = require("perfnvim.constants")
 local change_helpers = require("perfnvim.helpers.change_helpers")
 
 local function setup()
-	vim.api.nvim_set_hl(0, constants.p4addSignHighlight, { fg = "Lime", bg = "NONE" })
+	vim.api.nvim_set_hl(0, constants.p4addSignHighlight, { fg = "Lime" })
 	vim.fn.sign_define(constants.p4addSignName, {
-		text = "+",
+		text = "┃",
 		texthl = constants.p4addSignHighlight,
 	})
 
-	vim.api.nvim_set_hl(0, constants.p4changeSignHighlight, { fg = "yellow", bg = "NONE" })
+	vim.api.nvim_set_hl(0, constants.p4changeSignHighlight, { fg = "yellow" })
 	vim.fn.sign_define(constants.p4changeSignName, {
-		text = "~",
+		text = "┃",
 		texthl = constants.p4changeSignHighlight,
 	})
 
-	vim.api.nvim_set_hl(0, constants.p4deleteSignHighlight, { fg = "red", bg = "NONE" })
+	vim.api.nvim_set_hl(0, constants.p4deleteSignHighlight, { fg = "red" })
 	vim.fn.sign_define(constants.p4deleteSignName, {
 		text = "_",
 		texthl = constants.p4deleteSignHighlight,

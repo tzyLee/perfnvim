@@ -40,7 +40,7 @@ function client.getP4CommandTable(command, option)
     return result
 end
 
-function client.runP4Command(command, option)
+function client.runP4CommandArray(command, option)
     local cmdStr = client.buildP4Command(command, option)
     -- Execute the 'p4 info' command and capture the output as array of strings
     local result = {}
@@ -60,8 +60,21 @@ function client.runP4Command(command, option)
     return result
 end
 
+function client.runP4CommandOutput(command, option)
+    local cmdStr = client.buildP4Command(command, option)
+    -- Execute the 'p4 info' command and capture the output as array of strings
+    local p = io.popen(cmdStr)
+    if p == nil then
+        log.warn(string.format("Failed to run p4 command: '%s'.", cmdStr))
+        return ''
+    end
+    local result = p:read("*a")
+    p:close()
+    return result
+end
+
 function client.getClientRoot()
-    local result = next(client.runP4Command("info", { "-ztag", "-F", "%clientRoot%" }))
+    local result = next(client.runP4CommandArray("info", { "-ztag", "-F", "%clientRoot%" }))
     if result == nil then
         log.warn "Failed to obtain client root from p4 info."
         return ''
@@ -70,7 +83,7 @@ function client.getClientRoot()
 end
 
 function client.getClientName()
-    local result = next(client.runP4Command("info", { "-ztag", "-F", "%clientName%" }))
+    local result = next(client.runP4CommandArray("info", { "-ztag", "-F", "%clientName%" }))
     if result == nil then
         log.warn "Failed to obtain client name from p4 info."
         return ''
@@ -79,7 +92,7 @@ function client.getClientName()
 end
 
 function client.getClientStream()
-    local result = next(client.runP4Command("info", { "-ztag", "-F", "%clientStream%" }))
+    local result = next(client.runP4CommandArray("info", { "-ztag", "-F", "%clientStream%" }))
     if result == nil then
         log.warn "Failed to obtain client stream from p4 info."
         return ''
@@ -89,7 +102,7 @@ end
 
 function client.getOpenedFiles(localPath)
     localPath = localPath or false
-    local result = client.runP4Command("opened", { "-ztag", "-F", "%clientFile%" })
+    local result = client.runP4CommandArray("opened", { "-ztag", "-F", "%clientFile%" })
     if next(result) == nil then
         log.warn "Failed to obtain opened files."
         return {}

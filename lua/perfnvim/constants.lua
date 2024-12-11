@@ -1,13 +1,11 @@
-local M = {}
-
-M.p4addSignName = "P4Add"
-M.p4addSignHighlight = "P4AddSign"
-M.p4addSignGroupIdentifier = "P4Signs"
-M.p4changeSignName = "P4Change"
-M.p4changesSignGroupIdentifier = "P4Changes"
-M.p4changeSignHighlight = "P4ChangeSign"
-M.p4deleteSignName = "P4Delete"
-M.p4deletesSignGroupIdentifier = "P4deletes"
-M.p4deleteSignHighlight = "P4deleteSign"
-
-return M
+return {
+    p4addSignName = "P4Add",
+    p4addSignHighlight = "P4AddSign",
+    p4addSignGroupIdentifier = "P4Signs",
+    p4changeSignName = "P4Change",
+    p4changesSignGroupIdentifier = "P4Changes",
+    p4changeSignHighlight = "P4ChangeSign",
+    p4deleteSignName = "P4Delete",
+    p4deletesSignGroupIdentifier = "P4deletes",
+    p4deleteSignHighlight = "P4deleteSign",
+}
